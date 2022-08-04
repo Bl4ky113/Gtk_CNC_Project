@@ -28,9 +28,9 @@ Author: Bl4ky113
   <!-- interface-description GTK based GUI for using Arduino CNC Plotters. -->
   <!-- interface-copyright Bl4ky113 -->
   <!-- interface-authors Bl4ky113 -->
-  <object class="GtkApplicationWindow" id="window_app">
+  <template class="app_window" parent="GtkApplicationWindow">
     <property name="can-focus">False</property>
-    <property name="title" translatable="yes">CNC Plotter GTK - GUI</property>
+    <property name="window-position">center</property>
     <property name="icon-name">document-print</property>
     <child>
       <object class="GtkBox">
@@ -909,5 +909,5 @@ Author: Bl4ky113
         </child>
       </object>
     </child>
-  </object>
+  </template>
 </interface>
