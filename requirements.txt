@@ -1,6 +1,12 @@
 future==0.18.2
+greenlet==1.1.2
 iso8601==1.0.2
+jedi==0.18.1
+msgpack==1.0.4
+neovim==0.3.1
+parso==0.8.3
 pycairo==1.21.0
 PyGObject==3.42.2
+pynvim==0.4.3
+pyserial==3.5
 PyYAML==6.0
-serial==0.0.97
