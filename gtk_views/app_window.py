@@ -30,4 +30,11 @@ class AppWindow (Gtk.ApplicationWindow):
     @Gtk.Template.Callback()
     def open_serial_port_connect_menu (self, widget):
         serial_port_menu = SerialPortMenu()
-        serial_port_menu.present()
+        response = serial_port_menu.run()
+        print(response, Gtk.ResponseType.OK)
+        
+        if response != Gtk.ResponseType.OK:
+            return
+
+        
+

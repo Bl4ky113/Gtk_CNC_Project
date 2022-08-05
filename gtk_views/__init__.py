@@ -1,3 +1,4 @@
+""" Gtk App init, startup, and shutdown """
 
 # Import Gtk with GObject
 import gi

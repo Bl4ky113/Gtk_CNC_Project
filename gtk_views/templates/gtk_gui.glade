@@ -743,6 +743,10 @@ Author: Bl4ky113
                       <object class="GtkTextView" id="serial_output_textview">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
+                        <property name="editable">False</property>
+                        <property name="cursor-visible">False</property>
+                        <property name="accepts-tab">False</property>
+                        <property name="monospace">True</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>

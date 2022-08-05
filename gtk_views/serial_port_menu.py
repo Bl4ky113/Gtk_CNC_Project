@@ -1,15 +1,18 @@
 """ Serial Port Selection Menu """
 
 # Import Gtk with GObject
-
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gio, Gtk
 
-from screeninfo import get_monitors
+from screeninfo import get_monitors # get user main monitor size
+
+# Import App Modules
 
 from serial_cnc import list_serial_ports
+
+from .dialog_generator import dialog_generator
 
 @Gtk.Template.from_file("./gtk_views/templates/select_serial_port_menu.glade")
 class SerialPortMenu (Gtk.Dialog):
@@ -19,6 +22,9 @@ class SerialPortMenu (Gtk.Dialog):
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Init Serial Port's Name
+        self.serial_port_name = None
 
         # Resize the dialog, 2/5 in width and 3/5 in height
         monitor_data = get_monitors()[0]
@@ -43,9 +49,12 @@ class SerialPortMenu (Gtk.Dialog):
         name_column = Gtk.TreeViewColumn("Port Name", text_renderer, text=0)
         self.serial_treeview.append_column(name_column)
 
+        # Run and start the Dialog
+        self.present()
+
     @Gtk.Template.Callback()
     def select_serial_port (self, selection):
-        """ Get the Selected Serial Port from the TreeView 
+        """ Get the Selected Serial Port from the TreeView
             and save it's name
         """
         model, treeiter = selection.get_selected()
@@ -55,12 +64,19 @@ class SerialPortMenu (Gtk.Dialog):
 
     @Gtk.Template.Callback()
     def set_serial_port (self, widget):
-        """ Set and configure the Selected Serial Port 
-            Refresh the info in the Main App Window
+        """ Send the Selected Serial Port
+            To the Main AppWindow
         """
-        pass
+        if not self.serial_port_name:
+            dialog_generator(
+                    self,
+                    "Please Select a Serial Port From the List",
+                    "Check if your CNC Plotter is conected properly to this device"
+                    )
+
+        self.destroy()
 
     @Gtk.Template.Callback()
-    """ Quit the dialog """
     def cancel_dialog (self, widget):
+        """ Quit the dialog """
         self.destroy()
