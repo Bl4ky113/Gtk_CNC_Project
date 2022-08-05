@@ -10,7 +10,7 @@ from screeninfo import get_monitors # get user main monitor size
 
 # Import App Modules
 
-from serial_cnc import list_serial_ports
+from serial_cnc.list_serial_ports import list_serial_ports
 
 from .dialog_generator import dialog_generator
 

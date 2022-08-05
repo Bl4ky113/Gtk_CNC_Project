@@ -590,10 +590,17 @@ Author: Bl4ky113
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTextView" id="gcode_textviewer">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="input-purpose">terminal</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="gcode_textviewer">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="input-purpose">terminal</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -682,7 +689,7 @@ Author: Bl4ky113
                           <object class="GtkLabel" id="status_serial_port_label">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="label" translatable="yes">Status: Not Connected</property>
+                            <property name="label" translatable="yes">Active: Not Connected</property>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -698,13 +705,20 @@ Author: Bl4ky113
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkTextView" id="serial_port_info_textview">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="editable">False</property>
-                        <property name="cursor-visible">False</property>
-                        <property name="accepts-tab">False</property>
-                        <property name="monospace">True</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="serial_port_info_textview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="editable">False</property>
+                            <property name="cursor-visible">False</property>
+                            <property name="accepts-tab">False</property>
+                            <property name="monospace">True</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -740,13 +754,20 @@ Author: Bl4ky113
                     <property name="can-focus">False</property>
                     <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkTextView" id="serial_output_textview">
+                      <object class="GtkScrolledWindow">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
-                        <property name="editable">False</property>
-                        <property name="cursor-visible">False</property>
-                        <property name="accepts-tab">False</property>
-                        <property name="monospace">True</property>
+                        <property name="shadow-type">in</property>
+                        <child>
+                          <object class="GtkTextView" id="serial_output_textview">
+                            <property name="visible">True</property>
+                            <property name="can-focus">True</property>
+                            <property name="editable">False</property>
+                            <property name="cursor-visible">False</property>
+                            <property name="accepts-tab">False</property>
+                            <property name="monospace">True</property>
+                          </object>
+                        </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -879,7 +900,7 @@ Author: Bl4ky113
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="current_cord_label">
+                          <object class="GtkLabel" id="current_cords_label">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="xpad">20</property>
