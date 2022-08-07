@@ -32,8 +32,8 @@ struct coordPoint currentCoords;
 
 // Delays (ms)
 int stepDelay = 1;
-int lineDelay = 20;
-int plotterDelay = 50;
+int lineDelay = 10;
+int plotterDelay = 25;
 
 // Step Config
 float stepIncrease = 1;
@@ -62,8 +62,8 @@ void setup() {
     zAxis.write(zAxisOn);
     delay(100);
 
-    yAxisStepper.setSpeed(500);
-    xAxisStepper.setSpeed(500);
+    yAxisStepper.setSpeed(600);
+    xAxisStepper.setSpeed(600);
     
     // Initial Serial Print, Send Plotter Coord values
     Serial.print("CNC_Plotter_Data:Min_Max_Axis_Values;");
@@ -107,21 +107,20 @@ void loop() {
         while (Serial.available() > 0) { // Wait until theres something to read on the serial port
             inputChar = Serial.read();
 
-            if ((inputChar == "\n") || (inputChar = "\r")) { // End of the G-Code Line
+            if ((inputChar == '\n') || (inputChar == '\r')) { // End of the G-Code Line
                 if (lineIndex > 0) {
-                    line[lineIndex] = "\0";
+                    line[lineIndex] = '\0';
                     processIncomingLine(line, lineIndex); // Process the Line, and moves the CNC Plotter
                     lineIndex = 0;
                 }
 
                 lineSemiColon = false;
                 lineIsComment = false;
-
-                // Send Coords Data
                 printCurrentCoords();
+
             } else {
                 if (lineIsComment || lineSemiColon) {
-                    if (inputChar == ")") {
+                    if (inputChar == ')') {
                         lineIsComment = false;
                     }
                 } else {
@@ -134,13 +133,19 @@ void loop() {
                     
                     // Check the inputChar, to see if the line is commented, has a 
                     // semi colon. Will add the inputChar to the line if it's a 
-                    // character or a number, wont upercase the lowercase letters.
+                    // character or a number, wont upcase the lowercase letters.
                     switch (inputChar) {
                         case '(':
                             lineIsComment = true;
                         break;
                         case ';':
                             lineSemiColon = true;
+                        break;
+                        case ' ':
+                            // Skip white spaces
+                        break;
+                        case '/':
+                            // Skip slash as well  
                         break;
                         default:
                             line[lineIndex++] = inputChar;
@@ -168,16 +173,16 @@ void processIncomingLine (char* line, int charNum) {
         And anything else than those 3 lines.
     */
 
-    while (currentIndex >= charNum) {
+    while (currentIndex < charNum) {
         switch (line[currentIndex++]) {
             case 'G':
                 buffer[0] = line[currentIndex++];
-                buffer[1] = "\0";
+                buffer[1] = '\0';
                 
                 if (atoi(buffer) == 1) {
                     // Get X and Y values from the G-Code Line
-                    char* valueX = strchr(line + currentIndex, "X");
-                    char* valueY = strchr(line + currentIndex, "Y");
+                    char* valueX = strchr(line + currentIndex, 'X');
+                    char* valueY = strchr(line + currentIndex, 'Y');
                     
                     // Change newCoords Values to G-Code Values
                     if (valueY <= 0) {
@@ -189,7 +194,7 @@ void processIncomingLine (char* line, int charNum) {
                     } else {
                         newCoords.x = atof(valueX + 1);
                         newCoords.y = atof(valueY + 1);
-                        valueY = "\0";
+                        valueY = '\0';
                     }
                     
                     // Draw With the CNC Plotter the newCoords and update currentCoords
@@ -201,11 +206,11 @@ void processIncomingLine (char* line, int charNum) {
             break;
             case 'M':
                 buffer[0] = line[currentIndex++];
-                buffer[1] = "\0";
+                buffer[1] = '\0';
 
                 if (atoi(buffer) == 3) {
                     // Get new coord for Z
-                    char* valueZ = strchr(line + currentIndex, "Z");
+                    char* valueZ = strchr(line + currentIndex, 'Z');
                     float coordZ = atof(valueZ + 1);
 
                     // Move the CNC Plotter's Z Axis
@@ -310,15 +315,16 @@ void drawLine (float x1, float y1) {
     // Update the Current Position
     currentAxisXPosition = x1;
     currentAxisYPosition = y1;
+    printCurrentCoords();
 }
 
 void printCurrentCoords () {
     Serial.print("CNC_Plotter_Data:Current_Axis_Values;");
     Serial.print("axisX:");
-    Serial.print(currentAxisXPosition);
+    Serial.print(currentAxisXPosition / stepsPerMillimeterAxisX);
     Serial.print(";");
     Serial.print("axisY:");
-    Serial.print(currentAxisYPosition);
+    Serial.print(currentAxisYPosition / stepsPerMillimeterAxisY);
     Serial.print(";");
     Serial.print("axisZ:");
     Serial.print(currentAxisZPosition);
