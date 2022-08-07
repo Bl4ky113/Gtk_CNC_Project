@@ -2,7 +2,7 @@
 
 # Import GTK with GObject
 
-import gi 
+import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gio, Gtk
@@ -12,6 +12,7 @@ from screeninfo import get_monitors # get user monitor size
 from serial_cnc import Serial_CNC
 
 from .serial_port_menu import SerialPortMenu
+from .dialog_generator import dialog_generator
 
 # Create template from Glade-Made GTK GUI
 @Gtk.Template.from_file("./gtk_views/templates/gtk_gui.glade")
@@ -32,6 +33,9 @@ class AppWindow (Gtk.ApplicationWindow):
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Init Values
+        self.serial_port = None
+
         # Resize window to 4/5 in width and 3/5 in height of the user main monitor
         monitor_data = get_monitors()[0] 
         window_width = int(monitor_data.width * 0.20) * 4
@@ -44,6 +48,7 @@ class AppWindow (Gtk.ApplicationWindow):
         serial_port_menu = SerialPortMenu()
         response = serial_port_menu.run()
 
+        # Check if dialog's response is positive
         if response != Gtk.ResponseType.OK:
             return
     
@@ -54,6 +59,32 @@ class AppWindow (Gtk.ApplicationWindow):
         # Update Info in the Main App Window
         self._update_serial_info_data()
         self._update_cords_data()
+
+    @Gtk.Template.Callback()
+    def check_move_btn_cnc (self, widget):
+        """ Checks which widget triggered the signal, then moves the CNC Plotter
+            to the direction / position of the widget.
+        """
+        # Check if there's a serial_port active
+        if not self.serial_port:
+            dialog_generator(
+                    self,
+                    "CNC Plotter Serial Port Not Connected",
+                    "Connect the CNC Plotter via Serial Port before using it"
+                    )
+            return
+
+        # Get widget's Glade Id, and actions from it
+        widget_name = Gtk.Buildable.get_name(widget)
+        widget_actions = widget_name.split("_")
+        widget_actions.pop(0)
+        
+        if widget_actions[0] == "home":
+            set_home = widget_actions[1] == "set"
+            self.serial_port.go_home_cnc(set_home=set_home)
+        else:
+            negative = widget_actions[1] == "min"
+            self.serial_port.simple_move_cnc(widget_actions[0], negative=negative)
 
     def _update_serial_info_data (self):
         """ Updates the Data on the Serial Info Section """

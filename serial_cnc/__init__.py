@@ -11,9 +11,10 @@ class Serial_CNC (Serial):
         # Configure the Serial Port
 
         # Set CNC Cords
-        self.home_cords = (12, 23, 0)
-        self.current_cords = (2, 5, 1)
+        self.home_cords = (0, 0, 0)
+        self.current_cords = (0, 0, 0)
         self.max_cords = (40, 40, 1)
+        self.steps_cords = (5, 5, 1)
 
         # Set Write / Read timeout For avoiding DataOverflow
         self.timeout = 0.5
@@ -37,3 +38,15 @@ class Serial_CNC (Serial):
 
         return data
 
+    def simple_move_cnc (self, axis, negative=False):
+        """ Simple move the cnc, in one axis coord,
+            a number of steps no greater than the max_cords.
+            If negative, goes in the negative direction of the axis.
+        """
+        print(axis, negative)
+
+    def go_home_cnc (self, set_home=False):
+        """ Calcs how far is home from the current coords, then simple-moves there.
+            If set_home, will set the home on the current coords, and move there as well.
+        """
+        print(set_home)

@@ -144,6 +144,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -187,6 +188,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -230,6 +232,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -273,6 +276,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -316,6 +320,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -360,6 +365,7 @@ Author: Bl4ky113
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
                         <property name="always-show-image">True</property>
+                        <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
@@ -407,6 +413,7 @@ Author: Bl4ky113
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                             <property name="always-show-image">True</property>
+                            <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                             <child>
                               <object class="GtkBox">
                                 <property name="visible">True</property>
@@ -453,6 +460,7 @@ Author: Bl4ky113
                             <property name="can-focus">True</property>
                             <property name="receives-default">True</property>
                             <property name="always-show-image">True</property>
+                            <signal name="clicked" handler="check_move_btn_cnc" swapped="no"/>
                             <child>
                               <object class="GtkBox">
                                 <property name="visible">True</property>
