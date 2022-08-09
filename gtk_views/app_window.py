@@ -9,7 +9,7 @@ from gi.repository import GLib, Gio, Gtk
 
 from screeninfo import get_monitors # get user monitor size
 
-from serial_cnc import Serial_CNC
+from serial_cnc import SerialCNC
 
 from .serial_port_menu import SerialPortMenu
 from .dialog_generator import dialog_generator
@@ -26,9 +26,12 @@ class AppWindow (Gtk.ApplicationWindow):
     serial_port_info_textview: Gtk.TextView = Gtk.Template.Child()
 
     # Cords Objs
-    home_cords_label: Gtk.Label = Gtk.Template.Child()
-    current_cords_label: Gtk.Label = Gtk.Template.Child()
-    cord_canvas: Gtk.DrawingArea = Gtk.Template.Child()
+    home_coords_label: Gtk.Label = Gtk.Template.Child()
+    current_coords_label: Gtk.Label = Gtk.Template.Child()
+    coord_canvas: Gtk.DrawingArea = Gtk.Template.Child()
+
+    # Serial Output Objs
+    serial_output_textview: Gtk.TextView = Gtk.Template.Child()
 
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -51,14 +54,15 @@ class AppWindow (Gtk.ApplicationWindow):
         # Check if dialog's response is positive
         if response != Gtk.ResponseType.OK:
             return
-    
+
         # Start and Configure the CNC Serial Port
         serial_port_name = serial_port_menu.serial_port_name
-        self.serial_port = Serial_CNC(serial_port_name)
+        self.serial_port = SerialCNC(serial_port_name)
 
         # Update Info in the Main App Window
         self._update_serial_info_data()
-        self._update_cords_data()
+        self._update_coords_data()
+        GLib.timeout_add(200, self._update_serial_output)
 
     @Gtk.Template.Callback()
     def check_move_btn_cnc (self, widget):
@@ -74,11 +78,20 @@ class AppWindow (Gtk.ApplicationWindow):
                     )
             return
 
+        # Check if the Active Serial Port is being used
+        if self.serial_port.is_active:
+            dialog_generator(
+                    self,
+                    "CNC Plotter is Being Used",
+                    "Wait to the CNC to Finish its Current Action"
+                    )
+            return
+
         # Get widget's Glade Id, and actions from it
         widget_name = Gtk.Buildable.get_name(widget)
         widget_actions = widget_name.split("_")
         widget_actions.pop(0)
-        
+
         if widget_actions[0] == "home":
             set_home = widget_actions[1] == "set"
             self.serial_port.go_home_cnc(set_home=set_home)
@@ -86,9 +99,41 @@ class AppWindow (Gtk.ApplicationWindow):
             negative = widget_actions[1] == "min"
             self.serial_port.simple_move_cnc(widget_actions[0], negative=negative)
 
+        # Update Info in the Main App Window
+        self._update_serial_info_data()
+        self._update_coords_data()
+
+    @Gtk.Template.Callback()
+    def clear_serial_output (self, widget):
+        """ Clear Stored Serial Output from CNC Serial Port
+            and then update the Serial Output
+        """
+        self.serial_port.clear_serial_output()
+
+    def _update_serial_output (self):
+        """ Checks if there's any change to the CNC serial output
+            and updates it if there's any changes
+        """
+
+        if not self.serial_port: # Check if there's a serial_port
+            return
+
+        serial_output = self.serial_port.get_serial_output()
+
+        text_buffer = self.serial_output_textview.get_buffer()
+        start_iter = text_buffer.get_start_iter()
+        end_iter = text_buffer.get_end_iter()
+        current_serial_output = text_buffer.get_text(start_iter, end_iter, True)
+
+        if serial_output != current_serial_output: # Check if there's any changes
+            text_buffer.set_text(serial_output)
+
+        # Loop this funtion until the Serial Port gets used or is active
+        GLib.timeout_add(200, self._update_serial_output)
+
     def _update_serial_info_data (self):
         """ Updates the Data on the Serial Info Section """
-        if not self.serial_port: # Check if theres a serial_port
+        if not self.serial_port: # Check if there's a serial_port
             return
 
         serial_port_data = self.serial_port.data   
@@ -102,7 +147,7 @@ class AppWindow (Gtk.ApplicationWindow):
 
         text_buffer.set_text(serial_port_data_string)
 
-    def _update_cords_data (self):
+    def _update_coords_data (self):
         """ Updates the Data on the Cords Section """
         if not self.serial_port:
             return
@@ -111,14 +156,14 @@ class AppWindow (Gtk.ApplicationWindow):
 
         # Update Labels' Data
 
-        home_cords = self_port_data["home"]
-        current_cords = self_port_data["cords"]
+        home_coords = self_port_data["home"]
+        current_coords = self_port_data["coords"]
 
-        self.home_cords_label.set_text(
-                f"X: {home_cords[0]}; Y: {home_cords[1]}; Z: {home_cords[2]}"
+        self.home_coords_label.set_text(
+                f"X: {home_coords[0]}; Y: {home_coords[1]}; Z: {home_coords[2]}"
                 )
-        self.current_cords_label.set_text(
-                f"X: {current_cords[0]}; Y: {current_cords[1]}; Z: {current_cords[2]}"
+        self.current_coords_label.set_text(
+                f"X: {current_coords[0]}; Y: {current_coords[1]}; Z: {current_coords[2]}"
                 )
 
         # Update Canvas Data

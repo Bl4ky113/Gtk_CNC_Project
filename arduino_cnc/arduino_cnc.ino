@@ -32,8 +32,8 @@ struct coordPoint currentCoords;
 
 // Delays (ms)
 int stepDelay = 1;
-int lineDelay = 10;
-int plotterDelay = 25;
+int lineDelay = 0;
+int plotterDelay = 50;
 
 // Step Config
 float stepIncrease = 1;
@@ -66,28 +66,24 @@ void setup() {
     xAxisStepper.setSpeed(600);
     
     // Initial Serial Print, Send Plotter Coord values
-    Serial.print("CNC_Plotter_Data:Min_Max_Axis_Values;");
-    Serial.print("minAxisX:");
+    Serial.print("min_axis");
+    Serial.print(";");
     Serial.print(minAxisX);
     Serial.print(";");
-    Serial.print("maxAxisX:");
-    Serial.print(maxAxisX);
-    Serial.print(";");
-    Serial.print("minAxisY:");
     Serial.print(minAxisY);
     Serial.print(";");
-    Serial.print("maxAxisY:");
+    Serial.print(minAxisZ);
+    Serial.println(";");
+
+    Serial.print("max_axis");
+    Serial.print(";");
+    Serial.print(maxAxisX);
+    Serial.print(";");
     Serial.print(maxAxisY);
     Serial.print(";");
-    Serial.print("minAxisZ:");
-    Serial.print(minAxisZ);
-    Serial.print(";");
-    Serial.print("maxAxisZ:");
     Serial.print(maxAxisZ);
     Serial.println(";");
 
-    delay(500);
-    
     printCurrentCoords();
 };
 
@@ -116,8 +112,6 @@ void loop() {
 
                 lineSemiColon = false;
                 lineIsComment = false;
-                printCurrentCoords();
-
             } else {
                 if (lineIsComment || lineSemiColon) {
                     if (inputChar == ')') {
@@ -166,61 +160,43 @@ void processIncomingLine (char* line, int charNum) {
     newCoords.y = 0.0;
 
     /* Interpret the G-Code Line:
-        G1 X{NUM} Y{NUM}; Move X and Y to {NUM}
-        M3 Z1; Turn Z on
-        M3 Z0; Turn Z off
+        G1 X{NUM} Y{NUM} Z{0/1}; Move X and Y to {NUM}, Turn 1 or 0 Z
         Discard anything with a ()
-        And anything else than those 3 lines.
+        And anything else than this line.
     */
 
     while (currentIndex < charNum) {
-        switch (line[currentIndex++]) {
-            case 'G':
-                buffer[0] = line[currentIndex++];
-                buffer[1] = '\0';
+        if (line[currentIndex++] == 'G') {
+            buffer[0] = line[currentIndex++];
+            buffer[1] = '\0';
+
+            if (atoi(buffer) == 1){
+                // Get X, Y and Z values from the G-Code Line
+                char* valueX = strchr(line + currentIndex, 'X');
+                char* valueY = strchr(line + currentIndex, 'Y');
+                char* valueZ = strchr(line + currentIndex, 'Z');
                 
-                if (atoi(buffer) == 1) {
-                    // Get X and Y values from the G-Code Line
-                    char* valueX = strchr(line + currentIndex, 'X');
-                    char* valueY = strchr(line + currentIndex, 'Y');
-                    
-                    // Change newCoords Values to G-Code Values
-                    if (valueY <= 0) {
-                        newCoords.x = atof(valueX + 1);
-                        newCoords.y = currentCoords.y;
-                    } else if (valueX <= 0) {
-                        newCoords.x = currentCoords.x;
-                        newCoords.y = atof(valueY + 1);
-                    } else {
-                        newCoords.x = atof(valueX + 1);
-                        newCoords.y = atof(valueY + 1);
-                        valueY = '\0';
-                    }
-                    
-                    // Draw With the CNC Plotter the newCoords and update currentCoords
-                    drawLine(newCoords.x, newCoords.y);
-
-                    currentCoords.x = newCoords.x;
-                    currentCoords.y = newCoords.y;
+                // Convert NewCoord values to G-Code Values
+                newCoords.x = atof(valueX + 1);
+                newCoords.y = atof(valueY + 1);
+                newCoords.z = atof(valueZ + 1);
+                valueY = '\0';
+                
+                // Move Z Axis
+                if (newCoords.z == maxAxisZ) {
+                    moveUpZAxis();
+                } else {
+                    moveDownZAxis();
                 }
-            break;
-            case 'M':
-                buffer[0] = line[currentIndex++];
-                buffer[1] = '\0';
 
-                if (atoi(buffer) == 3) {
-                    // Get new coord for Z
-                    char* valueZ = strchr(line + currentIndex, 'Z');
-                    float coordZ = atof(valueZ + 1);
+                // Move X and Y Axis
+                drawLine(newCoords.x, newCoords.y);
 
-                    // Move the CNC Plotter's Z Axis
-                    if (coordZ == 1) {
-                        moveUpZAxis();
-                    } else {
-                        moveDownZAxis();
-                    }
-                }
-            break;
+                // Update current Coords with newCoords
+                currentCoords.x = newCoords.x;
+                currentCoords.y = newCoords.y;
+                currentCoords.z = newCoords.z;
+            }
         }
     }
 }
@@ -315,18 +291,16 @@ void drawLine (float x1, float y1) {
     // Update the Current Position
     currentAxisXPosition = x1;
     currentAxisYPosition = y1;
+    
     printCurrentCoords();
 }
 
 void printCurrentCoords () {
-    Serial.print("CNC_Plotter_Data:Current_Axis_Values;");
-    Serial.print("axisX:");
-    Serial.print(currentAxisXPosition / stepsPerMillimeterAxisX);
+    Serial.print("current_coords;");
+    Serial.print(currentAxisXPosition * 0.01);
     Serial.print(";");
-    Serial.print("axisY:");
-    Serial.print(currentAxisYPosition / stepsPerMillimeterAxisY);
+    Serial.print(currentAxisYPosition * 0.01);
     Serial.print(";");
-    Serial.print("axisZ:");
     Serial.print(currentAxisZPosition);
     Serial.println(";");
 }

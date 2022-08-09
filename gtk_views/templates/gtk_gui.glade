@@ -789,6 +789,7 @@ Author: Bl4ky113
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="receives-default">True</property>
+                        <signal name="clicked" handler="clear_serial_output" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -864,7 +865,7 @@ Author: Bl4ky113
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="home_cords_label">
+                          <object class="GtkLabel" id="home_coords_label">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="xpad">20</property>
@@ -908,7 +909,7 @@ Author: Bl4ky113
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="current_cords_label">
+                          <object class="GtkLabel" id="current_coords_label">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
                             <property name="xpad">20</property>
@@ -940,7 +941,7 @@ Author: Bl4ky113
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkDrawingArea" id="cord_canvas">
+                  <object class="GtkDrawingArea" id="coord_canvas">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
