@@ -770,9 +770,12 @@ Author: Bl4ky113
                           <object class="GtkTextView" id="serial_output_textview">
                             <property name="visible">True</property>
                             <property name="can-focus">True</property>
+                            <property name="vscroll-policy">natural</property>
                             <property name="editable">False</property>
+                            <property name="wrap-mode">word</property>
                             <property name="cursor-visible">False</property>
                             <property name="accepts-tab">False</property>
+                            <property name="input-purpose">terminal</property>
                             <property name="monospace">True</property>
                           </object>
                         </child>

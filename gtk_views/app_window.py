@@ -62,7 +62,7 @@ class AppWindow (Gtk.ApplicationWindow):
         # Update Info in the Main App Window
         self._update_serial_info_data()
         self._update_coords_data()
-        GLib.timeout_add(200, self._update_serial_output)
+        GLib.timeout_add(500, self._update_serial_output)
 
     @Gtk.Template.Callback()
     def check_move_btn_cnc (self, widget):
@@ -97,7 +97,7 @@ class AppWindow (Gtk.ApplicationWindow):
             self.serial_port.go_home_cnc(set_home=set_home)
         else:
             negative = widget_actions[1] == "min"
-            self.serial_port.simple_move_cnc(widget_actions[0], negative=negative)
+            self.serial_port.axis_movement_cnc(widget_actions[0], negative=negative)
 
         # Update Info in the Main App Window
         self._update_serial_info_data()
@@ -129,7 +129,7 @@ class AppWindow (Gtk.ApplicationWindow):
             text_buffer.set_text(serial_output)
 
         # Loop this funtion until the Serial Port gets used or is active
-        GLib.timeout_add(200, self._update_serial_output)
+        GLib.timeout_add(500, self._update_serial_output)
 
     def _update_serial_info_data (self):
         """ Updates the Data on the Serial Info Section """

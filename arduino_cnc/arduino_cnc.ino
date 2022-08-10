@@ -62,8 +62,8 @@ void setup() {
     zAxis.write(zAxisOn);
     delay(100);
 
-    yAxisStepper.setSpeed(600);
-    xAxisStepper.setSpeed(600);
+    yAxisStepper.setSpeed(500);
+    xAxisStepper.setSpeed(500);
     
     // Initial Serial Print, Send Plotter Coord values
     Serial.print("min_axis");
@@ -175,7 +175,7 @@ void processIncomingLine (char* line, int charNum) {
                 char* valueX = strchr(line + currentIndex, 'X');
                 char* valueY = strchr(line + currentIndex, 'Y');
                 char* valueZ = strchr(line + currentIndex, 'Z');
-                
+
                 // Convert NewCoord values to G-Code Values
                 newCoords.x = atof(valueX + 1);
                 newCoords.y = atof(valueY + 1);
@@ -231,15 +231,15 @@ void moveDownZAxis () {
 
 void drawLine (float x1, float y1) {
     // Avoid Drawing outside available area
-    if (x1 > maxAxisX) {
+    if (x1 >= maxAxisX) {
         x1 = maxAxisX;
-    } else if (x1 < minAxisX) {
+    } else if (x1 <= minAxisX) {
         x1 = minAxisX;
     }
 
-    if (y1 > maxAxisY) {
+    if (y1 >= maxAxisY) {
         y1 = maxAxisY;
-    } else if (y1 < minAxisY) {
+    } else if (y1 <= minAxisY) {
         y1 = minAxisY;
     }
 
@@ -253,7 +253,7 @@ void drawLine (float x1, float y1) {
     // Distance between both points, and steps de/in-crease.
 
     long distanceX = abs(x1 - x0);
-    long distanceY = abs(y1 - x0);
+    long distanceY = abs(y1 - y0);
 
     int stepX = x0 < x1 ? stepIncrease : - stepIncrease;
     int stepY = y0 < y1 ? stepIncrease : - stepIncrease;
@@ -263,7 +263,7 @@ void drawLine (float x1, float y1) {
 
     // Move First the Axis with the longer distance to move
     if (distanceX > distanceY) {
-        for (i = 0; i < distanceX; i++) {
+        for (i = 0; i < distanceX; ++i) {
             xAxisStepper.onestep(stepX, STEP);
             over += distanceY;
 
@@ -274,7 +274,7 @@ void drawLine (float x1, float y1) {
             delay(stepDelay);
         }
     } else {
-        for (i = 0; i < distanceY; i++) {
+        for (i = 0; i < distanceY; ++i) {
             yAxisStepper.onestep(stepY, STEP);
             over += distanceX;
 

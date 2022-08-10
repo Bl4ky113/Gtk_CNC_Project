@@ -27,7 +27,6 @@ class SerialCNC (Serial):
         self.min_coords = convert_serial_data_coords(self.serial_output[0])
         self.max_coords = convert_serial_data_coords(self.serial_output[1])
         self.current_coords = convert_serial_data_coords(self.serial_output[2])
-        self.new_coords = list(self.current_coords).copy()
         self.steps_coords = (5, 5, 1)
         self.is_active = False
 
@@ -54,63 +53,63 @@ class SerialCNC (Serial):
 
         return data
 
-    def simple_move_cnc (self, axis, negative=False):
-        """ Simple move the cnc, in one axis,
-            a number of steps no greater than the max_coords.
-            If negative, goes in the negative direction of the axis.
+    def axis_movement_cnc (self, axis, negative=False):
+        """ Simple movement on one axis of the CNC Plotter
+            no greater than the max and min limits.
+            Can go backwards or negative in the axis.
         """
-        if self.is_active: # Avoid moving while it's waiting for the new_current_coords
-            return
 
-        # Init Values: Index of the Axis,
-        # negative axis direction, and  new_coords list
+        # Init values
         axis_index = self.axis_names.index(axis)
-        negative_direction = 1 if not negative else -1
-        self.new_coords = list(self.current_coords).copy()
+        new_coords = list(self.current_coords).copy()
+        orientation = 1 if not negative else -1 # 1 normal, -1 backwards
 
-        # add steps with negative direction
-        self.new_coords[axis_index] += (negative_direction * self.steps_coords[axis_index])
+        # add steps towards direction on new_coords axis_index
+        new_coords[axis_index] = (new_coords[axis_index]) + (orientation * self.steps_coords[axis_index])
 
-        # check if new_coord is in range of the CNC
-        # if not set new_coord to min or max limit
-        if self.new_coords[axis_index] > self.max_coords[axis_index]:
-            self.new_coords[axis_index] = self.max_coords[axis_index]
-        elif self.new_coords[axis_index] < self.min_coords[axis_index]:
-            self.new_coords[axis_index] = self.min_coords[axis_index]       
+        # See if the new_coord axis value is out of limits
+        # Change it to the nearst limit
+        if new_coords[axis_index] > self.max_coords[axis_index]:
+            new_coords[axis_index] = self.max_coords[axis_index]
+        elif new_coords[axis_index] < self.min_coords[axis_index]:
+            new_coords[axis_index] = self.min_coords[axis_index]
 
-        asyncio.run(self.generate_move_message(*self.new_coords))
+        # Set active True, send the move message and set current coords to new_coords
+        self.is_active = True
+        asyncio.run(self.send_move_message_to_cnc(new_coords))
+        self.current_coords = tuple(new_coords)
 
     def go_home_cnc (self, set_home=False):
-        """ Calcs how far is home from the current coords, then simple-moves there.
-            If set_home, will set the home on the current coords, and move there as well.
+        """ Moves the CNC Plotter to the Home Coords, defined by the user.
+            If setting home, it'll change Home Coords by the current_coords and
+            then "moves" there.
         """
-        if self.is_active: # Avoid moving while it's waiting for the new_current_coords
-            return
 
         if set_home:
-            self.home_coords = tuple(list(self.current_coords).copy())
+            self.home_coords = self.current_coords
 
-        self.new_coords = list(self.home_coords).copy()
+        new_coords = list(self.home_coords).copy()
 
+        # Set active True, send the move message and set current coords to new_coords
         self.is_active = True
-        asyncio.run(self.generate_move_message(*self.new_coords))
+        asyncio.run(self.send_move_message_to_cnc(new_coords))
+        self.current_coords = tuple(new_coords)
 
-    async def generate_move_message (self, x_coord, y_coord, z_coord):
-        """ Generates the move message with the new_coords, to send it to the CNC Plotter """
-        message = f"G1 X{x_coord} Y{y_coord} Z{z_coord}\n".encode("ascii")
-        print(self.new_coords)
-        await self.send_move_message_to_cnc(message)
-        self.current_coords = tuple([x_coord, y_coord, z_coord])
-
-    async def send_move_message_to_cnc (self, message):
-        """ Sends a G-Code Line with new_Coords for the CNC Plotter,
-            gets, and returns, the new current_coords of the CNC Plotter
+    async def send_move_message_to_cnc (self, coords):
+        """ Generates a G-Code Line with the given CNC Plotter Coords.
+            Sends this G-Code to the CNC Serial Port, then waits for a
+            response, which is stored in serial output, and sets the
+            Serial Port inactive
         """
-        self.write(message)
-        raw_serial_output = self.readline().decode("ascii")
-        self.write("\0".encode("ascii"))
 
-        self.serial_output.append(raw_serial_output)
+        # Generate G-Code Line Message
+        gcode_message = f"G1 X{coords[0]} Y{coords[1]} Z{coords[2]}\n".encode("ascii")
+
+        # Send G-Code Line Message, and wait for response
+        self.serial_output.append("> " + gcode_message.decode("ascii"))
+        self.write(gcode_message)
+        self.serial_output.append(self.readline().decode("ascii"))
+
         self.is_active = False
 
     def get_serial_output (self):
