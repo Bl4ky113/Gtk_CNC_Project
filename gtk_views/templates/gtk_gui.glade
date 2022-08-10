@@ -589,7 +589,10 @@ Author: Bl4ky113
                       <object class="GtkFileChooserButton" id="gcode_filechooser">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="create-folders">False</property>
+                        <property name="show-hidden">True</property>
                         <property name="title" translatable="yes">G-Code</property>
+                        <signal name="file-set" handler="open_gcode_file" swapped="no"/>
                       </object>
                       <packing>
                         <property name="expand">False</property>

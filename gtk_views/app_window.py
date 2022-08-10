@@ -33,6 +33,9 @@ class AppWindow (Gtk.ApplicationWindow):
     # Serial Output Objs
     serial_output_textview: Gtk.TextView = Gtk.Template.Child()
 
+    # G-Code Viewer Objs
+    gcode_textviewer: Gtk.TextView = Gtk.Template.Child()
+
     def __init__ (self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -40,7 +43,7 @@ class AppWindow (Gtk.ApplicationWindow):
         self.serial_port = None
 
         # Resize window to 4/5 in width and 3/5 in height of the user main monitor
-        monitor_data = get_monitors()[0] 
+        monitor_data = get_monitors()[0]
         window_width = int(monitor_data.width * 0.20) * 4
         window_height = int(monitor_data.height * 0.20) * 3
 
@@ -110,6 +113,21 @@ class AppWindow (Gtk.ApplicationWindow):
         """
         self.serial_port.clear_serial_output()
 
+    @Gtk.Template.Callback()
+    def open_gcode_file (self, widget):
+        """ Open and show G-Code File after selecting it with the FileChooserDialog
+            Shows the content G-Code file in the gcode_textview
+        """
+        
+        file_name = widget.get_filename()
+
+        file_content = ""
+        with open(file_name, mode="r", encoding="UTF-8", newline="\n") as f:
+            file_content = f.read()
+
+        text_buffer = self.gcode_textviewer.get_buffer()
+        text_buffer.set_text(file_content)
+
     def _update_serial_output (self):
         """ Checks if there's any change to the CNC serial output
             and updates it if there's any changes
@@ -136,7 +154,7 @@ class AppWindow (Gtk.ApplicationWindow):
         if not self.serial_port: # Check if there's a serial_port
             return
 
-        serial_port_data = self.serial_port.data   
+        serial_port_data = self.serial_port.data
         self.name_serial_port_label.set_text("Name: " + str(serial_port_data["name"]))
         self.status_serial_port_label.set_text("Active: " + str(serial_port_data["is_open"]))
 
