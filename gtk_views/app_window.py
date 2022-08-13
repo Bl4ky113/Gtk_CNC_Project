@@ -41,6 +41,7 @@ class AppWindow (Gtk.ApplicationWindow):
 
         # Init Values
         self.serial_port = None
+        self.gcode_filename = None
 
         # Resize window to 4/5 in width and 3/5 in height of the user main monitor
         monitor_data = get_monitors()[0]
@@ -118,15 +119,64 @@ class AppWindow (Gtk.ApplicationWindow):
         """ Open and show G-Code File after selecting it with the FileChooserDialog
             Shows the content G-Code file in the gcode_textview
         """
-        
-        file_name = widget.get_filename()
 
+        # Get G-Code Filename
+        self.gcode_filename = widget.get_filename()
+
+        # Get G-Code File content
         file_content = ""
-        with open(file_name, mode="r", encoding="UTF-8", newline="\n") as f:
-            file_content = f.read()
+        with open(self.gcode_filename, mode="r", encoding="UTF-8", newline="\n") as gcode_file:
+            file_content = gcode_file.read()
 
+        # Make G-Code File Content visible on the gcode_textviewer
         text_buffer = self.gcode_textviewer.get_buffer()
         text_buffer.set_text(file_content)
+
+    @Gtk.Template.Callback()
+    def send_gcode_file_to_serial_port (self, widget):
+        """ Send Each line of the G-Code File to the CNC Serial Port
+            for processing and sending it to the CNC Plotter. Then
+            updates the Serial info and coords data.
+        """
+
+        # Check if there's a G-Code Filename and a Serial Port, which isn't active
+        if not self.gcode_filename \
+                and not self.serial_port \
+                and not self.serial_port.is_active:
+            dialog_generator(
+                    self,
+                    "Can't Run G-Code File",
+                    "Try opening a G-Code File and \
+                     Making Sure that The CNC Plotter is Conected via Serial Port"
+                    )
+            return
+
+        # Get G-Code File Content
+        file_content = ""
+        with open(self.gcode_filename, mode="r", encoding="UTF-8", newline="\n") as gcode_file:
+            file_content = gcode_file.read()
+        file_content = file_content.split("\n")
+
+        num_lines = len(file_content)
+        current_line = 0
+
+        # Send each G-Code Line to the CNC Serial Port,
+        # Wait the serial port to be non-active before sending anything
+        while current_line < num_lines:
+            if not self.serial_port.is_active and file_content[current_line] != "":
+                print(current_line, file_content[current_line])
+                # Send G-Code Line
+                GLib.timeout_add(
+                        2000,
+                        self.serial_port.process_gcode_line,
+                        file_content[current_line]
+                        )
+
+                # Update Serial Info and Coords
+                self._update_serial_info_data()
+                self._update_coords_data()
+
+                current_line += 1
 
     def _update_serial_output (self):
         """ Checks if there's any change to the CNC serial output

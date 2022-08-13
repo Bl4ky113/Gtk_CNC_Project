@@ -62,8 +62,8 @@ void setup() {
     zAxis.write(zAxisOn);
     delay(100);
 
-    yAxisStepper.setSpeed(500);
-    xAxisStepper.setSpeed(500);
+    yAxisStepper.setSpeed(600);
+    xAxisStepper.setSpeed(600);
     
     // Initial Serial Print, Send Plotter Coord values
     Serial.print("min_axis");
@@ -109,6 +109,8 @@ void loop() {
                     processIncomingLine(line, lineIndex); // Process the Line, and moves the CNC Plotter
                     lineIndex = 0;
                 }
+
+                printCurrentCoords();
 
                 lineSemiColon = false;
                 lineIsComment = false;
@@ -291,8 +293,6 @@ void drawLine (float x1, float y1) {
     // Update the Current Position
     currentAxisXPosition = x1;
     currentAxisYPosition = y1;
-    
-    printCurrentCoords();
 }
 
 void printCurrentCoords () {

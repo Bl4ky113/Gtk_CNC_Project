@@ -8,6 +8,7 @@ from serial import Serial
 # Import App Modules
 
 from .convert_serial_data_coords import convert_serial_data_coords
+from .convert_gcode_line_data_coords import convert_gcode_line_data_coords
 
 class SerialCNC (Serial):
     """ Serial Port Class of the CNC Plotter """
@@ -128,3 +129,21 @@ class SerialCNC (Serial):
     def clear_serial_output (self):
         """ Clear stored Serial Output """
         self.serial_output = []
+
+    def process_gcode_line (self, gcode_line):
+        """ Takes a G-Code Line from a G-Code File, gets its Coords,
+            creates a new_coords to send to the CNC Plotter. And then
+            updates the current coords with the new-coords
+        """
+        # Get New Coords from G-Code Line
+        new_coords = convert_gcode_line_data_coords(gcode_line, self.axis_names)
+
+        if not new_coords: # Check if there's new_coords available
+            return
+
+        print("in", new_coords)
+        # Set active True, send the move message and set current coords to new_coords
+        self.is_active = True
+        asyncio.run(self.send_move_message_to_cnc(new_coords))
+        self.current_coords = tuple(new_coords)
+        print("out", new_coords)
