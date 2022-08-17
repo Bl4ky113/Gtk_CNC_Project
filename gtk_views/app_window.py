@@ -68,6 +68,10 @@ class AppWindow (Gtk.ApplicationWindow):
         self._update_coords_data()
         GLib.timeout_add(500, self._update_serial_output)
 
+    @Gtk.Temaplte.Callback()
+    def open_generate_gcode_menu (self, widget):
+        pass
+
     @Gtk.Template.Callback()
     def check_move_btn_cnc (self, widget):
         """ Checks which widget triggered the signal, then moves the CNC Plotter
