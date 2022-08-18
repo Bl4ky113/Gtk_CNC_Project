@@ -52,3 +52,75 @@ Or make one G-Code File from an image, on the Generate G-Code Dialog.
 
 ### CNC Coords Menu
 You can see the current coords and home coords of the CNC Plotter.
+
+# How does the GUI Code Work?
+
+The GUI is divided on 3 modules, these combine in the GTK module to create the 
+GUI and its actions. These Modules are:
+
+## GTK_Views
+Main module where it creates the GTK AppWindow, or Main Window, instance. Imports 
+functions, objects or the entire module to add their functionality to the GUI. Specially 
+The Serial_CNC module. 
+It has some classes for each dialog or Non-Main Window, to keep them isolated and 
+avoid writing a 1k lines file.
+
+Each GUI is made using Glade, a simple GTK GUI dessigner.
+
+## Serial_CNC
+Module to connect to the Serial Port of the CNC, send and process Serial Output and Input.
+There could be some improvements to the get and send Serial Data process.
+It has some functions for the processing of Serial Input.
+
+## GCode_Process
+Module to process and create new G-Code Files from a given image, using Inkscape.
+
+## Modules Flow Chart
+
+1. Init, the GTK AppWindow shows
+2. User selects and connects the CNC Serial Port
+
+### Using the Simple CNC Control
+
+- By Default the Simple CNC Control is the active window or stack
+    otherwise, change it with the stackswitcher
+3. Click on the buttons to move the CNC Axis on Positive or Negative direction.
+    Can also set a Home Coords and move the CNC plotter to there
+4. Wait until the CNC Plotter finishes the movement
+5. Keep moving the CNC Plotter with the Axis and Home Buttons
+
+### Using The G-Code View
+
+- Change the Right Stack or active window to G-Code View
+3. Load a G-Code file by using the FileChooser Button and Dialog
+4. Send the G-Code file to the CNC Serial Port, this may take a while
+5. Load new G-Code & send the G-Code File to the Serial Port
+
+### Generate G-Code File from Image
+
+- Change the Right Stack or active window to G-Code View
+3. Click on the Generate G-Code, to show the G-Code Generator Dialog
+4. Load an Image with the FileChooser Button and Dialog
+5. Config the G-Code Generation
+6. Save the New G-Code File
+7. Use the G-Code File on the G-Code View Menu
+
+### Simple use of the Serial Output
+- Change the Left Stack or active window to Serial Output
+3. See the Serial Output of the CNC Plotter
+4. Clear the Output when it gets too long to scroll or read
+
+## Others
+
+There's other folders on the proyect, these are:
+
+### GCode_Examples
+Generated examples of images on G-Code, ready to use them with the CNC Plotter.
+
+### Arduino_CNC
+Code of the CNC Plotter's Arduino. The Flow chart of the code is:
+1. Init, send via Serial Port the max and min coords of the CNC Plotter, and the current coords
+2. Wait for a Valid G-Code Line "G1 X0 Y0 Z0"
+3. Process and get the Axis values from the G-Code Line
+4. Move the X, Y and Z axis acording the new Coords
+5. Send new coords, now current coords, via Serial Port
