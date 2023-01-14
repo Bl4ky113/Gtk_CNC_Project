@@ -25,11 +25,11 @@ class GtkApplication (Gtk.Application):
     def do_startup (self):
         Gtk.Application.do_startup(self)
 
-        action = Gio.SimpleAction.new('About', None)        
+        action = Gio.SimpleAction.new('About', None)
         action.connect("activate", self.on_about)
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("quit", None)
+        action = Gio.SimpleAction.new("Quit", None)
         action.connect("activate", self.on_quit)
         self.add_action(action)
 
